@@ -3,42 +3,17 @@
 ## Visual Diagram
 ![Use Case Diagram](./Image/UseCaseDiagram.png)
 
-## Actors
-*   **Customer:** Browses, orders, and tracks items.
-*   **Store Owner:** Manages business profile and views sales.
-*   **Local Helper:** Updates inventory and delivers orders.
-*   **Admin:** Orchestrates the platform and handles disputes.
+## Functional Overview
+The Use Case diagram illustrates the core functional requirements of the Hyperlocal Kirana Platform. It identifies the primary actors and their interactions with the system to fulfill the business goals of quick-commerce.
 
-## Mermaid Diagram
-```mermaid
-useCaseDiagram
-    actor "Customer" as C
-    actor "Store Owner" as S
-    actor "Local Helper" as H
-    actor "Admin" as A
+### Primary Actors
+*   **Customer:** The end-user who drives the revenue. Their primary use cases include searching for nearby stores, managing a shopping cart, performing secure checkouts, and tracking their delivery status in real-time.
+*   **Store Owner:** The business partner. They use the system to process incoming orders and manage the high-level business profile of their Kirana shop.
+*   **Local Helper:** The operational backbone. They are responsible for the physical aspects of the business, such as updating shelf stock levels (inventory management) and performing the actual pick-up and delivery tasks.
+*   **Admin:** The platform moderator. They oversee user management, handle financial payouts, and resolve disputes between other actors.
 
-    package "Hyperlocal Platform" {
-        usecase "Authenticate (Login/Register)" as UC1
-        usecase "Discover Nearby Stores" as UC2
-        usecase "Add to Cart & Checkout" as UC3
-        usecase "Track Delivery Live" as UC4
-        usecase "Maintain Store Inventory" as UC5
-        usecase "Process & Pack Order" as UC6
-        usecase "Pick-up & Deliver Order" as UC7
-        usecase "Manage Users & Payouts" as UC8
-    }
-
-    C --> UC1
-    C --> UC2
-    C --> UC3
-    C --> UC4
-
-    S --> UC1
-    S --> UC6
-
-    H --> UC1
-    H --> UC5
-    H --> UC7
-
-    A --> UC8
-```
+## Key System Use Cases
+1.  **Authentication:** Secure onboarding and session management for all user roles.
+2.  **Hyperlocal Discovery:** Geolocation-based filtering to ensure customers only see shops within a 2km radius.
+3.  **Order Management:** A complex flow involving cart management, payment processing, and status transitions.
+4.  **Inventory Sync:** Real-time updates specifically designed for helpers to keep digital listings synchronized with physical store shelves.

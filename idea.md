@@ -6,6 +6,13 @@ Traditional Kirana (neighborhood) stores are being sidelined by warehouse-based 
 ## Proposed Solution
 A hyperlocal marketplace that digitizes existing Kirana stores. It connects them with nearby customers and local delivery "helpers," creating a self-sustaining neighborhood ecosystem for ~15-minute deliveries without the need for centralized warehouses (dark stores).
 
+## Repository Structure
+This project is documented through various architectural diagrams:
+*   **`useCaseDiagram.md`**: Outlines the interactions between different user roles (Customer, Owner, Helper, Admin).
+*   **`sequenceDiagram.md`**: Details the step-by-step logic of the ordering and fulfillment process.
+*   **`classDiagram.md`**: Shows the object-oriented design and relationships within the TypeScript backend.
+*   **`ErDiagram.md`**: Defines the relational database schema for managing orders, inventory, and users.
+
 ## Target Users
 *   **Customers:** Local residents looking for fast, reliable grocery delivery.
 *   **Store Owners:** Kirana shopkeepers wanting to digitize inventory and reach more customers.

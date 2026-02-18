@@ -3,73 +3,20 @@
 ## Visual Diagram
 ![Class Diagram](./Image/classDiagram.png)
 
-This diagram represents the object-oriented structure of the TypeScript backend, showing clear inheritance and system entities.
+## Technical Architecture
+This diagram represents the object-oriented structure of the TypeScript project. It follows clean architecture principles, ensuring high maintainability and scalability for the hyperlocal ecosystem.
 
-## Mermaid Diagram
-```mermaid
-classDiagram
-    class User {
-        +string id
-        +string name
-        +string phone
-        +string role
-        +login()
-        +logout()
-    }
+### Core Class Structure
+1.  **User Inheritance:** A base `User` class contains common attributes (id, name, phone). Specific roles like `Customer`, `StoreOwner`, and `Helper` extend this base class to inherit common behavior while implementing role-specific methods (e.g., `placeOrder` for Customers, `acceptTask` for Helpers).
+2.  **Commerce Entities:**
+    *   **Store:** Represents the physical shop, containing its geolocation and linked inventory.
+    *   **Product:** The template for items, containing generic data like price and category.
+    *   **Inventory:** A bridge entity that manages the specific stock levels and localized pricing for a product at a particular store.
+3.  **Transactional Logic:**
+    *   **Cart:** A transient entity managed by the Customer to group items before they become an order.
+    *   **Order:** The central state machine tracking the status of a purchase from acceptance to delivery.
 
-    class Customer {
-        +Address defaultAddress
-        +placeOrder(Cart cart)
-        +trackDelivery()
-    }
-
-    class StoreOwner {
-        +string storeId
-        +viewAnalytics()
-    }
-
-    class Helper {
-        +bool isOnline
-        +Location currentLoc
-        +acceptTask()
-        +updateInventory()
-    }
-
-    class Store {
-        +string id
-        +string name
-        +Point location
-        +Inventory inventory
-        +updateStatus()
-    }
-
-    class Product {
-        +string id
-        +string name
-        +double price
-        +string category
-    }
-
-    class Order {
-        +string id
-        +OrderStatus status
-        +double totalAmount
-        +calculateTax()
-    }
-
-    class Cart {
-        +List~CartItem~ items
-        +addItem()
-        +clear()
-    }
-
-    User <|-- Customer
-    User <|-- StoreOwner
-    User <|-- Helper
-
-    Customer "1" -- "1" Cart : managed_by
-    Store "1" *-- "many" Product : listed_in
-    Order "1" -- "1" Store : received_by
-    Order "1" -- "1" Helper : delivered_by
-    Order "1" -- "many" Product : contains
-```
+### Relationships
+*   **Composition:** A `Store` consists of many `Products` through its inventory.
+*   **Aggregation:** An `Order` contains multiple `OrderItems` which reference specific `Products`.
+*   **Associations:** Orders are linked to exactly one `Store` (receiver) and one `Helper` (fulfiller).

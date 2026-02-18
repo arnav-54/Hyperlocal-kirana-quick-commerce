@@ -3,82 +3,24 @@
 ## Visual Diagram
 ![ER Diagram](./Image/erdiagram.png)
 
-Designed for a relational structure using TypeScript models (Prisma/TypeORM).
+## Database Schema Design
+The schema is designed for a relational PostgreSQL database to ensure data integrity and complex querying capabilities (especially for geospatial searches).
 
-## Mermaid Diagram
-```mermaid
-erDiagram
-    User ||--o{ Order : places
-    User ||--o{ Store : owns
-    User ||--o| HelperProfile : has
+### Key Entities & Attributes
 
-    Store ||--o{ Inventory : stocks
-    Product ||--o{ Inventory : defined_in
-    
-    Order ||--|{ OrderItem : contains
-    Product ||--o{ OrderItem : order_line
-    
-    Order ||--|| Payment : has
-    Order ||--|| Delivery : tracked_via
+#### 1. Identity Management
+*   **Users:** Stores credentials, contact info, and roles.
+*   **HelperProfile:** Extended information for partners, including vehicle details and live availability status.
 
-    User {
-        string id PK
-        string email
-        string phone
-        string password
-        enum role
-    }
+#### 2. Discovery & Inventory
+*   **Stores:** Includes a `geometry` column (PostGIS) for high-performance radius searches.
+*   **Products:** A master catalog for all items available on the platform.
+*   **Inventory:** A junction table matching Products to Stores, maintaining the `stock_level` and specific `price` for that location.
 
-    Store {
-        string id PK
-        string name
-        geometry location
-        string owner_id FK
-    }
+#### 3. Transactional Flow
+*   **Orders:** Tracks the lifecycle of a sale. It uses foreign keys to link to the Customer, Store, and current Status.
+*   **OrderItem:** Captures a snapshot of the product price and quantity at the time of purchase to ensure historical accuracy even if inventory prices change.
 
-    Product {
-        string id PK
-        string name
-        string category
-        string description
-    }
-
-    Inventory {
-        string store_id PK, FK
-        string product_id PK, FK
-        int stock_level
-        double price
-    }
-
-    Order {
-        string id PK
-        string customer_id FK
-        string store_id FK
-        string status
-        double total_price
-    }
-
-    OrderItem {
-        string id PK
-        string order_id FK
-        string product_id FK
-        int quantity
-        double unit_price
-    }
-
-    Payment {
-        string id PK
-        string order_id FK
-        string transaction_id
-        string method
-        double amount
-    }
-
-    Delivery {
-        string id PK
-        string order_id FK
-        string helper_id FK
-        string status
-        timestamp assigned_at
-    }
-```
+#### 4. Fulfillment & Finance
+*   **Payment:** Records transaction IDs and methods (UPI, Card, COD) to prevent double-billing and handle refunds.
+*   **Delivery:** Manages the link between an Order and the Helper, storing timestamps for assignment and completion to calculate delivery performance.
