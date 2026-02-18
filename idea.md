@@ -1,8 +1,5 @@
 # Project Idea: Hyperlocal Kirana Quick-Commerce Platform
 
-![System Architecture](./Image/uml.png)
-
-
 ## Problem Statement
 Traditional Kirana (neighborhood) stores are being sidelined by warehouse-based quick-commerce giants. These local stores lack the digital tools to compete, despite being closer to the customers. At the same time, customers want the speed of quick-commerce but often prefer the trust and variety of their local neighborhood shops.
 
