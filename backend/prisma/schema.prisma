@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  STORE_OWNER
+  HELPER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  PICKED_UP
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  password  String
+  name      String
+  phone     String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  store     Store?   @relation("OwnerStore")
+  orders    Order[]  @relation("CustomerOrders")
+  tasks     Order[]  @relation("HelperTasks")
+}
+
+model Store {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  address     String
+  location    Location // GeoJSON format: { type: "Point", coordinates: [lng, lat] }
+  ownerId     String   @unique @db.ObjectId
+  owner       User     @relation("OwnerStore", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventory   Inventory[]
+  orders      Order[]
+}
+
+type Location {
+  type        String   @default("Point")
+  coordinates Float[]  // [lng, lat]
+}
+
+model Product {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  category    String
+  basePrice   Float
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventory   Inventory[]
+}
+
+model Inventory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  storeId    String   @db.ObjectId
+  store      Store    @relation(fields: [storeId], references: [id])
+  productId  String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id])
+  stockLevel Int      @default(0)
+  price      Float    // Localized price
+  updatedAt  DateTime @updatedAt
+
+  @@unique([storeId, productId])
+}
+
+model Order {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  customerId  String      @db.ObjectId
+  customer    User        @relation("CustomerOrders", fields: [customerId], references: [id])
+  storeId     String      @db.ObjectId
+  store       Store       @relation(fields: [storeId], references: [id])
+  helperId    String?     @db.ObjectId
+  helper      User?       @relation("HelperTasks", fields: [helperId], references: [id])
+  status      OrderStatus @default(PENDING)
+  totalAmount Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String  @db.ObjectId
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String  @db.ObjectId
+  name      String  // Snapshot at time of order
+  price     Float   // Snapshot at time of order
+  quantity  Int
+}
