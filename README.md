@@ -42,4 +42,4 @@ The backend follows **Clean Architecture** patterns:
 ## Evaluation Criteria Highlights
 - **OOP Principles:** Utilized inheritance for user profiles and encapsulation in service layers.
 - **Clean Architecture:** Strict separation of concerns between HTTP logic, business logic, and data access.
-- **Consistent Git Commits:** All modules implemented with meaningful context.
+- **Consistent Git Commits:** All modules implemented with meaningful context. 
