@@ -108,3 +108,4 @@ model OrderItem {
   price     Float   // Snapshot at time of order
   quantity  Int
 }
+ 
