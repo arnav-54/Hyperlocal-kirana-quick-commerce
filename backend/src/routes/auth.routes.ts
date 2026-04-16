@@ -16,3 +16,4 @@ class AuthRoutes {
 }
 
 export default new AuthRoutes().router;
+ 
