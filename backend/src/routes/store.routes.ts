@@ -21,3 +21,4 @@ class StoreRoutes {
 }
 
 export default new StoreRoutes().router;
+ 
