@@ -22,3 +22,4 @@ class OrderRoutes {
 }
 
 export default new OrderRoutes().router;
+ 
