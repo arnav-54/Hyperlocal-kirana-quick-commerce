@@ -21,7 +21,7 @@ The backend follows **Clean Architecture** patterns:
 - **Database:** Prisma ORM for type-safe database access with MongoDB.
 
 ## Tech Stack
-- **Frontend:** Next.js 14, Tailwind CSS, Lucide Icons.
+- **Frontend:** React, Vanilla CSS, Lucide Icons.
 - **Backend:** Node.js, Express, TypeScript, Prisma, MongoDB.
 - **Auth:** JWT-based authentication with Bcrypt password hashing.
 
@@ -38,6 +38,19 @@ The backend follows **Clean Architecture** patterns:
 1. Navigate to `/frontend`.
 2. Install dependencies: `npm install`.
 3. Start development server: `npm run dev`.
+
+## Deployment (Vercel)
+
+This project is optimized for deployment on Vercel.
+
+### Backend
+1. Create a new project on Vercel and set the **Root Directory** to `backend`.
+2. Add Environment Variables: `DATABASE_URL` (MongoDB) and `JWT_SECRET`.
+3. Vercel will auto-run `npm install` and `prisma generate`.
+
+### Frontend
+1. Create a new project on Vercel and set the **Root Directory** to `frontend`.
+2. Vite and SPA routing will be handled via the included `vercel.json`.
 
 ## Evaluation Criteria Highlights
 - **OOP Principles:** Utilized inheritance for user profiles and encapsulation in service layers.
