@@ -27,7 +27,6 @@ class App {
   }
 
   private initializeRoutes() {
-    // Health check
     this.app.get('/health', (req, res) => {
       res.status(200).json({ status: 'OK' });
     });
@@ -43,12 +42,15 @@ class App {
 
   public listen() {
     this.app.listen(this.port, () => {
-      console.log(`🚀 Server fully initialized using Class-based OOP Architecture.`);
       console.log(`Server running on port ${this.port}`);
     });
   }
 }
 
 const server = new App();
-server.listen();
+export const app = server.app;
+
+if (process.env.NODE_ENV !== 'production') {
+  server.listen();
+}
  

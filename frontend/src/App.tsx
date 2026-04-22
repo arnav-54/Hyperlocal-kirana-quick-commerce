@@ -9,7 +9,11 @@ import {
 } from 'lucide-react';
 import './index.css';
 
-// --- Types ---
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+console.log('🔗 API Base URL:', API_BASE_URL);
+
+
 interface Item { id: string; name: string; price: number; img: string; category: string; }
 interface Store { id: string; name: string; type: string; rating: number; time: string; address: string; img: string; inventory: Item[]; helpers: string[]; stats: { dailySales: number; orders: number; growth: string; visitors: number; }; }
 interface Helper { id: string; name: string; phone: string; status: 'Online' | 'Offline' | 'In Delivery'; earnings: string; deliveries: number; }
@@ -19,7 +23,7 @@ interface Order {
     helperId?: string; date: string; payMethod: 'UPI' | 'KHATA';
 }
 
-// --- Auth Hook (WITH REGISTRATION & KHATA LOGIC) ---
+
 const useAuth = () => {
     const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('active_user') || 'null'));
     const [khataBalance, setKhataBalance] = useState(() => Number(localStorage.getItem('khata_balance')) || 0);
@@ -36,7 +40,10 @@ const useAuth = () => {
 
     const register = (email: string, password: string, name: string, role: string) => {
         if(db.find((u:any) => u.email === email)) throw new Error('Email is already registered. Please log in.');
-        setDb([...db, { email, password, name, role }]);
+        const newUser = { email, password, name, role };
+        setDb([...db, newUser]);
+
+        setUser({ id: Date.now(), name, role, email });
         return true;
     };
 
@@ -52,62 +59,64 @@ const useAuth = () => {
     return { user, register, login, logout, isAuthenticated: !!user, khataBalance, setKhataBalance };
 };
 
-// --- DUMMY DATA ---
+
+const DEFAULT_ITEM_IMG = 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800';
+
 const MASTER_CATALOG: Item[] = [
-    { id: 'm1', name: 'Aashirvaad Atta 5kg', price: 245, img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', category: 'Atta & Pulses' },
-    { id: 'm1b', name: 'Toor Dal 1kg', price: 140, img: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=400', category: 'Atta & Pulses' },
-    { id: 'm1c', name: 'Basmati Rice 5kg', price: 650, img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400', category: 'Atta & Pulses' },
-    { id: 'm1d', name: 'Chana Dal 1kg', price: 90, img: 'https://images.unsplash.com/photo-1588681664899-f142ff2dc9b1?w=400', category: 'Atta & Pulses' },
-    { id: 'm1e', name: 'Moong Dal 1kg', price: 110, img: 'https://images.unsplash.com/photo-1515942400420-2b98fed1f515?w=400', category: 'Atta & Pulses' },
+    { id: 'm1', name: 'Aashirvaad Atta 5kg', price: 245, img: DEFAULT_ITEM_IMG, category: 'Atta & Pulses' },
+    { id: 'm1b', name: 'Toor Dal 1kg', price: 140, img: DEFAULT_ITEM_IMG, category: 'Atta & Pulses' },
+    { id: 'm1c', name: 'Basmati Rice 5kg', price: 650, img: DEFAULT_ITEM_IMG, category: 'Atta & Pulses' },
+    { id: 'm1d', name: 'Chana Dal 1kg', price: 90, img: DEFAULT_ITEM_IMG, category: 'Atta & Pulses' },
+    { id: 'm1e', name: 'Moong Dal 1kg', price: 110, img: DEFAULT_ITEM_IMG, category: 'Atta & Pulses' },
     
-    { id: 'm2', name: 'Tata Salt 1kg', price: 28, img: 'https://images.unsplash.com/photo-1589114066041-9457d19c5c24?w=400', category: 'Spices & Essentials' },
-    { id: 'm2b', name: 'Everest Meat Masala 100g', price: 75, img: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400', category: 'Spices & Essentials' },
-    { id: 'm2c', name: 'MDH Red Chilli Powder 100g', price: 42, img: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=400', category: 'Spices & Essentials' },
-    { id: 'm2d', name: 'Catch Turmeric Powder 100g', price: 30, img: 'https://images.unsplash.com/photo-1615486171448-4cbabdf47b85?w=400', category: 'Spices & Essentials' },
-    { id: 'm2e', name: 'Everest Garam Masala 100g', price: 80, img: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400', category: 'Spices & Essentials' },
-    { id: 'm4', name: 'Fortune Oil 1L', price: 165, img: 'https://images.unsplash.com/photo-1474979266404-7eaac3dc9910?w=400', category: 'Spices & Essentials' },
+    { id: 'm2', name: 'Tata Salt 1kg', price: 28, img: DEFAULT_ITEM_IMG, category: 'Spices & Essentials' },
+    { id: 'm2b', name: 'Everest Meat Masala 100g', price: 75, img: DEFAULT_ITEM_IMG, category: 'Spices & Essentials' },
+    { id: 'm2c', name: 'MDH Red Chilli Powder 100g', price: 42, img: DEFAULT_ITEM_IMG, category: 'Spices & Essentials' },
+    { id: 'm2d', name: 'Catch Turmeric Powder 100g', price: 30, img: DEFAULT_ITEM_IMG, category: 'Spices & Essentials' },
+    { id: 'm2e', name: 'Everest Garam Masala 100g', price: 80, img: DEFAULT_ITEM_IMG, category: 'Spices & Essentials' },
+    { id: 'm4', name: 'Fortune Oil 1L', price: 165, img: DEFAULT_ITEM_IMG, category: 'Spices & Essentials' },
     
-    { id: 'm3', name: 'Maggi Noodles 70g', price: 14, img: 'https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=400', category: 'Snacks & Biscuits' },
-    { id: 'm3b', name: 'Lay\'s Classic Salted 50g', price: 20, img: 'https://images.unsplash.com/photo-1566478989037-eade2e591782?w=400', category: 'Snacks & Biscuits' },
-    { id: 'm3c', name: 'Parle-G 800g', price: 75, img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400', category: 'Snacks & Biscuits' },
-    { id: 'm3d', name: 'Haldiram Bhujia 200g', price: 55, img: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400', category: 'Snacks & Biscuits' },
-    { id: 'm3e', name: 'Hide & Seek 100g', price: 30, img: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=400', category: 'Snacks & Biscuits' },
+    { id: 'm3', name: 'Maggi Noodles 70g', price: 14, img: DEFAULT_ITEM_IMG, category: 'Snacks & Biscuits' },
+    { id: 'm3b', name: 'Lay\'s Classic Salted 50g', price: 20, img: DEFAULT_ITEM_IMG, category: 'Snacks & Biscuits' },
+    { id: 'm3c', name: 'Parle-G 800g', price: 75, img: DEFAULT_ITEM_IMG, category: 'Snacks & Biscuits' },
+    { id: 'm3d', name: 'Haldiram Bhujia 200g', price: 55, img: DEFAULT_ITEM_IMG, category: 'Snacks & Biscuits' },
+    { id: 'm3e', name: 'Hide & Seek 100g', price: 30, img: DEFAULT_ITEM_IMG, category: 'Snacks & Biscuits' },
     
-    { id: 'm5', name: 'Amul Taaza Milk 500ml', price: 27, img: 'https://images.unsplash.com/photo-1550583724-125581cc258b?w=400', category: 'Dairy & Cold Items' },
-    { id: 'm5b', name: 'Mother Dairy Paneer 200g', price: 85, img: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400', category: 'Dairy & Cold Items' },
-    { id: 'm5c', name: 'Amul Butter 100g', price: 56, img: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400', category: 'Dairy & Cold Items' },
-    { id: 'm5d', name: 'Amul Cheese Slices 200g', price: 125, img: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400', category: 'Dairy & Cold Items' },
-    { id: 'm5e', name: 'Curd 400g', price: 35, img: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400', category: 'Dairy & Cold Items' },
+    { id: 'm5', name: 'Amul Taaza Milk 500ml', price: 27, img: DEFAULT_ITEM_IMG, category: 'Dairy & Cold Items' },
+    { id: 'm5b', name: 'Mother Dairy Paneer 200g', price: 85, img: DEFAULT_ITEM_IMG, category: 'Dairy & Cold Items' },
+    { id: 'm5c', name: 'Amul Butter 100g', price: 56, img: DEFAULT_ITEM_IMG, category: 'Dairy & Cold Items' },
+    { id: 'm5d', name: 'Amul Cheese Slices 200g', price: 125, img: DEFAULT_ITEM_IMG, category: 'Dairy & Cold Items' },
+    { id: 'm5e', name: 'Curd 400g', price: 35, img: DEFAULT_ITEM_IMG, category: 'Dairy & Cold Items' },
     
-    { id: 'm11a', name: 'Surf Excel Matic 1kg', price: 230, img: 'https://images.unsplash.com/photo-1584824388147-3bdcc633c7eb?w=400', category: 'Home & Cleaning' },
-    { id: 'm11b', name: 'Vim Bar 200g', price: 15, img: 'https://images.unsplash.com/photo-1584824388147-3bdcc633c7eb?w=400', category: 'Home & Cleaning' },
-    { id: 'm11c', name: 'Harpic 500ml', price: 90, img: 'https://images.unsplash.com/photo-1584824388147-3bdcc633c7eb?w=400', category: 'Home & Cleaning' },
-    { id: 'm11d', name: 'Colin 500ml', price: 95, img: 'https://images.unsplash.com/photo-1584824388147-3bdcc633c7eb?w=400', category: 'Home & Cleaning' },
+    { id: 'm11a', name: 'Surf Excel Matic 1kg', price: 230, img: DEFAULT_ITEM_IMG, category: 'Home & Cleaning' },
+    { id: 'm11b', name: 'Vim Bar 200g', price: 15, img: DEFAULT_ITEM_IMG, category: 'Home & Cleaning' },
+    { id: 'm11c', name: 'Harpic 500ml', price: 90, img: DEFAULT_ITEM_IMG, category: 'Home & Cleaning' },
+    { id: 'm11d', name: 'Colin 500ml', price: 95, img: DEFAULT_ITEM_IMG, category: 'Home & Cleaning' },
     
-    { id: 'm12a', name: 'Dettol Soap 4x75g', price: 120, img: 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=400', category: 'Personal Care' },
-    { id: 'm12b', name: 'Colgate MaxFresh 150g', price: 95, img: 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=400', category: 'Personal Care' },
-    { id: 'm12c', name: 'Head & Shoulders 180ml', price: 160, img: 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=400', category: 'Personal Care' },
-    { id: 'm12d', name: 'Nivea Body Lotion 200ml', price: 220, img: 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=400', category: 'Personal Care' },
+    { id: 'm12a', name: 'Dettol Soap 4x75g', price: 120, img: DEFAULT_ITEM_IMG, category: 'Personal Care' },
+    { id: 'm12b', name: 'Colgate MaxFresh 150g', price: 95, img: DEFAULT_ITEM_IMG, category: 'Personal Care' },
+    { id: 'm12c', name: 'Head & Shoulders 180ml', price: 160, img: DEFAULT_ITEM_IMG, category: 'Personal Care' },
+    { id: 'm12d', name: 'Nivea Body Lotion 200ml', price: 220, img: DEFAULT_ITEM_IMG, category: 'Personal Care' },
     
-    { id: 'm8', name: 'Fresh Tomato 1kg', price: 40, img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400', category: 'Veggies' },
-    { id: 'm8b', name: 'Potato 1kg', price: 30, img: 'https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=400', category: 'Veggies' },
-    { id: 'm8c', name: 'Onion 1kg', price: 35, img: 'https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=400', category: 'Veggies' },
-    { id: 'm8d', name: 'Cauliflower 1pc', price: 25, img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400', category: 'Veggies' },
-    { id: 'm8e', name: 'Green Chilli 100g', price: 15, img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400', category: 'Veggies' },
+    { id: 'm8', name: 'Fresh Tomato 1kg', price: 40, img: DEFAULT_ITEM_IMG, category: 'Veggies' },
+    { id: 'm8b', name: 'Potato 1kg', price: 30, img: DEFAULT_ITEM_IMG, category: 'Veggies' },
+    { id: 'm8c', name: 'Onion 1kg', price: 35, img: DEFAULT_ITEM_IMG, category: 'Veggies' },
+    { id: 'm8d', name: 'Cauliflower 1pc', price: 25, img: DEFAULT_ITEM_IMG, category: 'Veggies' },
+    { id: 'm8e', name: 'Green Chilli 100g', price: 15, img: DEFAULT_ITEM_IMG, category: 'Veggies' },
     
-    { id: 'm9a', name: 'Crocin Pain Relief', price: 15, img: 'https://images.unsplash.com/photo-1586015555751-639706248359?w=400', category: 'Medical' },
-    { id: 'm9b', name: 'Pudin Hara 10s', price: 25, img: 'https://images.unsplash.com/photo-1586015555751-639706248359?w=400', category: 'Medical' },
-    { id: 'm9c', name: 'Eno Lemon 100g', price: 130, img: 'https://images.unsplash.com/photo-1586015555751-639706248359?w=400', category: 'Medical' },
-    { id: 'm9d', name: 'Volini Gel 30g', price: 105, img: 'https://images.unsplash.com/photo-1586015555751-639706248359?w=400', category: 'Medical' },
-    { id: 'm9e', name: 'Digene Tablets 15s', price: 20, img: 'https://images.unsplash.com/photo-1586015555751-639706248359?w=400', category: 'Medical' },
+    { id: 'm9a', name: 'Crocin Pain Relief', price: 15, img: DEFAULT_ITEM_IMG, category: 'Medical' },
+    { id: 'm9b', name: 'Pudin Hara 10s', price: 25, img: DEFAULT_ITEM_IMG, category: 'Medical' },
+    { id: 'm9c', name: 'Eno Lemon 100g', price: 130, img: DEFAULT_ITEM_IMG, category: 'Medical' },
+    { id: 'm9d', name: 'Volini Gel 30g', price: 105, img: DEFAULT_ITEM_IMG, category: 'Medical' },
+    { id: 'm9e', name: 'Digene Tablets 15s', price: 20, img: DEFAULT_ITEM_IMG, category: 'Medical' },
     
-    { id: 'm10a', name: 'Duracell AA Batteries 4pcs', price: 140, img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', category: 'Electronics' },
-    { id: 'm10b', name: 'Type-C USB Cable', price: 250, img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', category: 'Electronics' },
-    { id: 'm10c', name: 'LED Bulb 9W', price: 90, img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', category: 'Electronics' },
+    { id: 'm10a', name: 'Duracell AA Batteries 4pcs', price: 140, img: DEFAULT_ITEM_IMG, category: 'Electronics' },
+    { id: 'm10b', name: 'Type-C USB Cable', price: 250, img: DEFAULT_ITEM_IMG, category: 'Electronics' },
+    { id: 'm10c', name: 'LED Bulb 9W', price: 90, img: DEFAULT_ITEM_IMG, category: 'Electronics' },
     
-    { id: 'm13a', name: 'Classmate Notebook', price: 50, img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', category: 'Stationery' },
-    { id: 'm13b', name: 'Reynolds Pen Pack', price: 45, img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', category: 'Stationery' },
-    { id: 'm13c', name: 'A4 Paper Rim', price: 250, img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', category: 'Stationery' },
+    { id: 'm13a', name: 'Classmate Notebook', price: 50, img: DEFAULT_ITEM_IMG, category: 'Stationery' },
+    { id: 'm13b', name: 'Reynolds Pen Pack', price: 45, img: DEFAULT_ITEM_IMG, category: 'Stationery' },
+    { id: 'm13c', name: 'A4 Paper Rim', price: 250, img: DEFAULT_ITEM_IMG, category: 'Stationery' },
 ];
 
 const INITIAL_HELPERS: Helper[] = [
@@ -120,16 +129,16 @@ const INITIAL_HELPERS: Helper[] = [
 ];
 
 const INITIAL_STORES: Store[] = [
-    { id: 's1', name: 'Sharma Kirana Store', type: 'grocery', rating: 4.8, time: '12m', address: 'Noida Sec 18', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800', inventory: MASTER_CATALOG.filter(c => ['Atta & Pulses', 'Spices & Essentials', 'Snacks & Biscuits', 'Dairy & Cold Items', 'Home & Cleaning'].includes(c.category)), helpers: ['h1', 'h2', 'h3', 'h4', 'h5'], stats: { dailySales: 18500, orders: 56, growth: '+15%', visitors: 1200 } },
-    { id: 's2', name: 'Daily Needs Supermart', type: 'grocery', rating: 4.6, time: '14m', address: 'Noida Sec 15', img: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800', inventory: MASTER_CATALOG.filter(c => ['Atta & Pulses', 'Spices & Essentials', 'Snacks & Biscuits'].includes(c.category)), helpers: ['h2', 'h3', 'h6', 'h1', 'h4'], stats: { dailySales: 15000, orders: 40, growth: '+10%', visitors: 900 } },
-    { id: 's3', name: 'City Care Pharmacy', type: 'medical', rating: 4.9, time: '8m', address: 'Noida Sec 62', img: 'https://images.unsplash.com/photo-1587854692132-471fe244023c?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Medical' || c.category === 'Personal Care'), helpers: ['h4', 'h5', 'h6', 'h1', 'h2'], stats: { dailySales: 9200, orders: 34, growth: '+8%', visitors: 450 } },
-    { id: 's4', name: 'Apna Medical', type: 'medical', rating: 4.7, time: '10m', address: 'Noida Sec 16', img: 'https://images.unsplash.com/photo-1550572017-ed20015dd085?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Medical'), helpers: ['h1', 'h2', 'h3', 'h5', 'h6'], stats: { dailySales: 7000, orders: 25, growth: '+12%', visitors: 300 } },
-    { id: 's5', name: 'Fresh Farm Veggies', type: 'veggies', rating: 4.5, time: '15m', address: 'Noida Sec 15', img: 'https://images.unsplash.com/photo-1488459711616-d3971a930ec8?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Veggies'), helpers: ['h1', 'h4', 'h5', 'h6', 'h2'], stats: { dailySales: 5400, orders: 20, growth: '+5%', visitors: 200 } },
-    { id: 's6', name: 'Green Leaf Veggies', type: 'veggies', rating: 4.6, time: '11m', address: 'Noida Sec 18', img: 'https://images.unsplash.com/photo-1590779033100-9f60705a2f3d?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Veggies'), helpers: ['h2', 'h3', 'h4', 'h5', 'h6'], stats: { dailySales: 4800, orders: 18, growth: '+3%', visitors: 250 } },
-    { id: 's7', name: 'Gupta Electronic Needs', type: 'electronics', rating: 4.4, time: '20m', address: 'Noida Sec 18', img: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Electronics'), helpers: ['h1', 'h3', 'h5', 'h6', 'h4'], stats: { dailySales: 12000, orders: 12, growth: '+2%', visitors: 100 } },
-    { id: 's8', name: 'Student Print & Stationery', type: 'stationery', rating: 4.8, time: '15m', address: 'Noida Sec 62', img: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Stationery'), helpers: ['h2', 'h4', 'h5', 'h6', 'h1'], stats: { dailySales: 3000, orders: 15, growth: '+20%', visitors: 400 } },
-    { id: 's9', name: 'Ramu Kaka Snacks', type: 'food', rating: 4.7, time: '18m', address: 'Noida Sec 15', img: 'https://images.unsplash.com/photo-1599481238640-4c1288750d7a?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Snacks & Biscuits'), helpers: ['h1', 'h2', 'h3', 'h4', 'h5'], stats: { dailySales: 4000, orders: 30, growth: '+15%', visitors: 500 } },
-    { id: 's10', name: 'Fresh Meat & Fish Mart', type: 'food', rating: 4.6, time: '25m', address: 'Noida Sec 16', img: 'https://images.unsplash.com/photo-1607623814075-e51df1bd682f?w=800', inventory: MASTER_CATALOG.filter(c => c.category === 'Dairy & Cold Items'), helpers: ['h2', 'h3', 'h4', 'h5', 'h6'], stats: { dailySales: 8000, orders: 10, growth: '+5%', visitors: 150 } },
+    { id: 's1', name: 'Sharma Kirana Store', type: 'grocery', rating: 4.8, time: '12m', address: 'Noida Sec 18', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => ['Atta & Pulses', 'Spices & Essentials', 'Snacks & Biscuits', 'Dairy & Cold Items', 'Home & Cleaning'].includes(c.category)), helpers: ['h1', 'h2', 'h3', 'h4', 'h5'], stats: { dailySales: 18500, orders: 56, growth: '+15%', visitors: 1200 } },
+    { id: 's2', name: 'Daily Needs Supermart', type: 'grocery', rating: 4.6, time: '14m', address: 'Noida Sec 15', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => ['Atta & Pulses', 'Spices & Essentials', 'Snacks & Biscuits'].includes(c.category)), helpers: ['h2', 'h3', 'h6', 'h1', 'h4'], stats: { dailySales: 15000, orders: 40, growth: '+10%', visitors: 900 } },
+    { id: 's3', name: 'City Care Pharmacy', type: 'medical', rating: 4.9, time: '8m', address: 'Noida Sec 62', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Medical' || c.category === 'Personal Care'), helpers: ['h4', 'h5', 'h6', 'h1', 'h2'], stats: { dailySales: 9200, orders: 34, growth: '+8%', visitors: 450 } },
+    { id: 's4', name: 'Apna Medical', type: 'medical', rating: 4.7, time: '10m', address: 'Noida Sec 16', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Medical'), helpers: ['h1', 'h2', 'h3', 'h5', 'h6'], stats: { dailySales: 7000, orders: 25, growth: '+12%', visitors: 300 } },
+    { id: 's5', name: 'Fresh Farm Veggies', type: 'veggies', rating: 4.5, time: '15m', address: 'Noida Sec 15', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Veggies'), helpers: ['h1', 'h4', 'h5', 'h6', 'h2'], stats: { dailySales: 5400, orders: 20, growth: '+5%', visitors: 200 } },
+    { id: 's6', name: 'Green Leaf Veggies', type: 'veggies', rating: 4.6, time: '11m', address: 'Noida Sec 18', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Veggies'), helpers: ['h2', 'h3', 'h4', 'h5', 'h6'], stats: { dailySales: 4800, orders: 18, growth: '+3%', visitors: 250 } },
+    { id: 's7', name: 'Gupta Electronic Needs', type: 'electronics', rating: 4.4, time: '20m', address: 'Noida Sec 18', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Electronics'), helpers: ['h1', 'h3', 'h5', 'h6', 'h4'], stats: { dailySales: 12000, orders: 12, growth: '+2%', visitors: 100 } },
+    { id: 's8', name: 'Student Print & Stationery', type: 'stationery', rating: 4.8, time: '15m', address: 'Noida Sec 62', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Stationery'), helpers: ['h2', 'h4', 'h5', 'h6', 'h1'], stats: { dailySales: 3000, orders: 15, growth: '+20%', visitors: 400 } },
+    { id: 's9', name: 'Ramu Kaka Snacks', type: 'food', rating: 4.7, time: '18m', address: 'Noida Sec 15', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Snacks & Biscuits'), helpers: ['h1', 'h2', 'h3', 'h4', 'h5'], stats: { dailySales: 4000, orders: 30, growth: '+15%', visitors: 500 } },
+    { id: 's10', name: 'Fresh Meat & Fish Mart', type: 'food', rating: 4.6, time: '25m', address: 'Noida Sec 16', img: DEFAULT_ITEM_IMG, inventory: MASTER_CATALOG.filter(c => c.category === 'Dairy & Cold Items'), helpers: ['h2', 'h3', 'h4', 'h5', 'h6'], stats: { dailySales: 8000, orders: 10, growth: '+5%', visitors: 150 } },
 ];
 
 const CATEGORIES = [
@@ -218,7 +227,7 @@ function Landing({ user }: any) {
                         </div>
                     </div>
                     <div className="hero-image-wrapper">
-                        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800" alt="Shop" className="main-hero-img" />
+                        <img src="https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=800" alt="Shop" className="main-hero-img" />
                     </div>
                 </div>
             </div>
@@ -251,7 +260,7 @@ function Landing({ user }: any) {
                         <Quote className="t-quote" size={32} />
                         <p className="t-text">"KiranaConnect brought my local Sharma ji's store to my phone! Using the digital Khata is amazing since I just pay at the end of the month exactly like offline!"</p>
                         <div className="t-author">
-                            <div className="t-avatar"><User size={20} /></div>
+                            <div className="t-avatar"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="Rahul" style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}}/></div>
                             <div><strong style={{display:'block'}}>Rahul Verma</strong><span className="text-gray" style={{fontSize:'0.8rem'}}>Noida Sector 62</span></div>
                         </div>
                     </div>
@@ -259,7 +268,7 @@ function Landing({ user }: any) {
                         <Quote className="t-quote" size={32} />
                         <p className="t-text">"Tracking the delivery is incredibly precise. You literally see when the rider picks it up and arrives. Better than the typical 10-minute promises."</p>
                         <div className="t-author">
-                            <div className="t-avatar"><User size={20} /></div>
+                            <div className="t-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="Priya" style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}}/></div>
                             <div><strong style={{display:'block'}}>Priya Singh</strong><span className="text-gray" style={{fontSize:'0.8rem'}}>Greater Noida</span></div>
                         </div>
                     </div>
@@ -267,7 +276,7 @@ function Landing({ user }: any) {
                         <Quote className="t-quote" size={32} />
                         <p className="t-text">"Perfect for medicines at night. City Care Pharmacy dispatched my order immediately and the rider updated status at every step."</p>
                         <div className="t-author">
-                            <div className="t-avatar"><User size={20} /></div>
+                            <div className="t-avatar"><img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100" alt="Vikram" style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}}/></div>
                             <div><strong style={{display:'block'}}>Vikram Das</strong><span className="text-gray" style={{fontSize:'0.8rem'}}>Noida Extension</span></div>
                         </div>
                     </div>
@@ -279,7 +288,7 @@ function Landing({ user }: any) {
                     <h2 style={{fontSize: '3rem', fontWeight: 900}}>Grow Your Local Business With Us</h2>
                     <p style={{fontSize: '1.2rem', opacity: 0.9, maxWidth: '800px', margin: '0 auto'}}>Are you a Kirana Store owner? Digitize your shelves, offer 15-minute fulfillment, and manage your Khata entirely online through our platform. Transform your store into a hyper-local powerhouse.</p>
                     
-                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800" style={{position: 'absolute', right: '-100px', top: '-100px', opacity: 0.1, zIndex: 0, height: '600px'}} alt="bg" />
+                    <img src="https://images.unsplash.com/photo-1626708704479-43c410a011ac?w=800" style={{position: 'absolute', right: '-100px', top: '-100px', opacity: 0.1, zIndex: 0, height: '600px'}} alt="bg" />
                 </div>
             </section>
         </div>
@@ -489,7 +498,7 @@ function CartPage({ cart, onPlaceOrder, authHook, onAddToCart }: any) {
     let subtotal = cart.reduce((acc: number, item: any) => acc + (item.price * item.qty), 0);
     const cartQty = cart.reduce((acc: number, item: any) => acc + item.qty, 0);
 
-    // Dynamic Logic (Free delivery > 500 or 5 items + discount)
+
     const isPromoActive = subtotal >= 500 || cartQty >= 5;
     let deliveryFee = isPromoActive ? 0 : 25;
     let discount = isPromoActive ? Math.floor(subtotal * 0.05) : 0;
@@ -560,18 +569,18 @@ function CartPage({ cart, onPlaceOrder, authHook, onAddToCart }: any) {
 }
 
 function AdminPanel({ stores, setStores, helpers, setHelpers, orders, onConfirmOrder, onHelperStatusUpdate }: any) {
-    const [activeModule, setActiveModule] = useState('live'); // 'live', 'inventory', 'helpers', 'stores'
+    const [activeModule, setActiveModule] = useState('live');
     const [selectedStoreId, setSelectedStoreId] = useState(stores?.[0]?.id || '');
     const [assignedRiders, setAssignedRiders] = useState<any>({});
     
     const selectedStore = stores?.find((s: any) => s.id === selectedStoreId) || stores?.[0] || { id: 's0', name: 'Unknown', inventory: [], helpers: [], stats: { dailySales:0, orders:0, growth:'0%', visitors:0 } };
     
-    // Derived dashboard stats
+
     const storeOrders = orders?.filter((o:any) => activeModule === 'live' ? o.shopId === selectedStore?.id : true) || [];
     const activeOrders = storeOrders.filter((o:any) => o.status !== 'COMPLETED');
     const completedOrders = storeOrders.filter((o:any) => o.status === 'COMPLETED');
     
-    const [modalConfig, setModalConfig] = useState<any>(null); // { type: 'PRODUCT' | 'HELPER' | 'STORE', title: string }
+    const [modalConfig, setModalConfig] = useState<any>(null);
     const [modalData, setModalData] = useState<any>({});
 
     const handleModalSubmit = (e: any) => {
@@ -845,7 +854,7 @@ function AdminPanel({ stores, setStores, helpers, setHelpers, orders, onConfirmO
 }
 
 function HelperPanel({ orders, onStatusUpdate }: any) {
-    const helperOrders = orders.filter((o:any) => o.helperId && o.status !== 'COMPLETED'); // Show all assigned active prototype orders
+    const helperOrders = orders.filter((o:any) => o.helperId && o.status !== 'COMPLETED');
     
     return (
         <div className="page-wrapper animate-in bg-gray pt-6 pb-6">
@@ -937,8 +946,10 @@ function AuthPage({ isSignup, authHook }: any) {
     const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
-        if (role === 'merchant' && !isSignup) { setEmail('admin@kiranaconnect.com'); setPassword('admin123'); }
-        if (role === 'helper' && !isSignup) { setEmail('helper@kirana.com'); setPassword('helper123'); }
+        setEmail('');
+        setPassword('');
+        setName('');
+        setErrorMsg('');
     }, [role, isSignup]);
 
     const handleAuth = (e: any) => {
@@ -946,8 +957,14 @@ function AuthPage({ isSignup, authHook }: any) {
         setErrorMsg('');
         const roleType = role === 'merchant' ? 'STORE_OWNER' : role === 'helper' ? 'HELPER' : 'CUSTOMER';
         try {
-            if (isSignup) { authHook.register(email, password, name, roleType); authHook.login(email, password, roleType); successRedirect(roleType); } 
-            else { authHook.login(email, password, roleType); successRedirect(roleType); }
+            if (isSignup) { 
+                authHook.register(email, password, name, roleType); 
+                successRedirect(roleType); 
+            } 
+            else { 
+                authHook.login(email, password, roleType); 
+                successRedirect(roleType); 
+            }
         } catch(err: any) { setErrorMsg(err.message); }
     };
     const successRedirect = (roleType: string) => { navigate(roleType === 'STORE_OWNER' ? '/admin-panel' : roleType === 'HELPER' ? '/helper-panel' : '/marketplace'); };
@@ -972,7 +989,7 @@ function AuthPage({ isSignup, authHook }: any) {
     );
 }
 
-// ... Footer logic left the same to save tokens
+
 function Footer() {
     return (
         <footer style={{background: 'var(--slate-900)', color: 'white', marginTop: 'auto'}}>
@@ -1085,10 +1102,8 @@ export default function App() {
         setCart([]);
     };
 
-    // Admin updates order
     const handleConfirmOrder = (orderId: string, helperId: string) => { setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CONFIRMED', helperId } : o)); };
     
-    // Helper updates status (Picked Up, Arrived)
     const handleHelperStatusUpdate = (orderId: string, status: any) => { setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o)); }
 
     return (
